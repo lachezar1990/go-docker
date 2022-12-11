@@ -1,28 +1,36 @@
 package main
 
 import (
-	"time"
+	"log"
+	"moqt-go/docker/db"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-type Task struct {
-	ID          int32     `json:"id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedDate time.Time `json:"created_date"`
+type APIError struct {
+	ErrorMessage string `json:"error"`
 }
 
 func main() {
+	err := db.SetupDB()
+
+	if err != nil {
+		log.Fatalf("DB err: %v", err)
+	}
+
 	r := gin.Default()
 	r.GET("/get-tasks", getTasks)
 	r.Run(":5555")
 }
 
 func getTasks(c *gin.Context) {
-	tasks := make([]Task, 0)
+	tasks, err := db.GetTasks()
 
-	tasks = append(tasks, Task{ID: 1, Name: "pyrvi test", Description: "pyrvo opisanie", CreatedDate: time.Now()})
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, APIError{ErrorMessage: err.Error()})
+		return
+	}
 
 	c.IndentedJSON(200, tasks)
 }
