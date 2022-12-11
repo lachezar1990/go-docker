@@ -19,3 +19,35 @@ func GetTasks() ([]Task, error) {
 
 	return tasks, nil
 }
+
+func GetTaskByID(id int32) (Task, error) {
+	var task Task
+
+	err := db.First(&task, id).Error
+
+	if err != nil {
+		return Task{}, err
+	}
+
+	return task, nil
+}
+
+func DeleteTaskByID(id int32) error {
+	err := db.Where("id = ?", id).Delete(&Task{}).Error
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func AddTask(task Task) (Task, error) {
+	err := db.Create(&task).Error
+
+	if err != nil {
+		return Task{}, err
+	}
+
+	return task, nil
+}
